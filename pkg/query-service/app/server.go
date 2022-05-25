@@ -12,10 +12,12 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/cors"
 	"github.com/soheilhy/cmux"
 	"go.signoz.io/query-service/app/clickhouseReader"
 	"go.signoz.io/query-service/app/dashboards"
+	"go.signoz.io/query-service/config"
 	"go.signoz.io/query-service/constants"
 	"go.signoz.io/query-service/dao"
 	"go.signoz.io/query-service/healthcheck"
@@ -26,7 +28,13 @@ import (
 
 type ServerOptions struct {
 	HTTPHostPort string
-	// DruidClientUrl string
+
+	// PromConfigPath stores the prometheus config file path
+	PromConfigPath string
+
+	// QsConfig contains the parameters needed for query service at the
+	// start up
+	QsConfig *config.QsConfig
 }
 
 // Server runs HTTP, Mux and a grpc server
@@ -70,7 +78,25 @@ func NewServer(serverOptions *ServerOptions) (*Server, error) {
 	// 	return nil, err
 	// }
 
-	if err := dao.InitDao("sqlite", constants.RELATIONAL_DATASOURCE_PATH); err != nil {
+	// validate query service configuration.
+	if err := config.ValidateQs(serverOptions.QsConfig); err != nil {
+		return nil, err
+	}
+
+	// initiate query service DB connection pool
+	qsdb, err := dao.InitConn(serverOptions.QsConfig.GetDB())
+	if err != nil {
+		return nil, err
+	}
+
+	// initiate base tables
+	if err := dao.InitDao(serverOptions.QsConfig.GetDBEngine(), qsdb); err != nil {
+		return nil, err
+	}
+
+	// initiate tables and load default dashboards
+	err = dashboards.InitDB(serverOptions.QsConfig.DB.Engine, qsdb)
+	if err != nil {
 		return nil, err
 	}
 
@@ -85,7 +111,8 @@ func NewServer(serverOptions *ServerOptions) (*Server, error) {
 		// separatePorts:      grpcPort != httpPort,
 		unavailableChannel: make(chan healthcheck.Status),
 	}
-	httpServer, err := s.createHTTPServer()
+
+	httpServer, err := s.createHTTPServer(qsdb)
 
 	if err != nil {
 		return nil, err
@@ -95,29 +122,32 @@ func NewServer(serverOptions *ServerOptions) (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) createHTTPServer() (*http.Server, error) {
-
-	localDB, err := dashboards.InitDB(constants.RELATIONAL_DATASOURCE_PATH)
-	if err != nil {
-		return nil, err
-	}
-	localDB.SetMaxOpenConns(10)
+func (s *Server) createHTTPServer(qsdb *sqlx.DB) (*http.Server, error) {
 
 	var reader Reader
+	// note: qsdb is primary database used by query service to store
+	// config items like alert rules, channels, dashboard settings etc.
+	// on the other hand, STORAGE(env var) is used for connecting to
+	// metric and event data store (clickhouse)
 
 	storage := os.Getenv("STORAGE")
 	if storage == "druid" {
 		zap.S().Info("Using Apache Druid as datastore ...")
-		// reader = druidReader.NewReader(localDB)
+		// reader = druidReader.NewReader(qsdb)
 	} else if storage == "clickhouse" {
 		zap.S().Info("Using ClickHouse as datastore ...")
-		clickhouseReader := clickhouseReader.NewReader(localDB)
+		readerOpts := &clickhouseReader.ReaderOpts{
+			LocalDB:        qsdb,
+			PromConfigPath: s.serverOptions.PromConfigPath,
+		}
+		clickhouseReader := clickhouseReader.NewReader(readerOpts)
 		go clickhouseReader.Start()
 		reader = clickhouseReader
 	} else {
 		return nil, fmt.Errorf("Storage type: %s is not supported in query service", storage)
 	}
 
+	// Initiate API handler with event data store and qs data model (modelDao)
 	apiHandler, err := NewAPIHandler(&reader, dao.DB())
 	if err != nil {
 		return nil, err

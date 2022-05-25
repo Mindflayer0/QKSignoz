@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
 	"github.com/jmoiron/sqlx"
+	qsconfig "go.signoz.io/query-service/config"
 	"go.signoz.io/query-service/model"
 	"go.uber.org/zap"
 )
@@ -17,14 +18,22 @@ import (
 // This time the global variable is unexported.
 var db *sqlx.DB
 
-// InitDB sets up setting up the connection pool global variable.
-func InitDB(dataSourceName string) (*sqlx.DB, error) {
-	var err error
+func InitDB(kind qsconfig.DBEngine, conn *sqlx.DB) error {
+	db = conn
 
-	db, err = sqlx.Open("sqlite3", dataSourceName)
-	if err != nil {
-		return nil, err
+	switch kind {
+	case qsconfig.PG:
+		return initPG(conn)
+	case qsconfig.SQLLITE:
+		return initSQL(conn)
+	default:
+		return fmt.Errorf("database engine not supported")
 	}
+}
+
+// initSQL sets up model tables in sqlite
+func initSQL(conn *sqlx.DB) error {
+	var err error
 
 	table_schema := `CREATE TABLE IF NOT EXISTS dashboards (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +45,7 @@ func InitDB(dataSourceName string) (*sqlx.DB, error) {
 
 	_, err = db.Exec(table_schema)
 	if err != nil {
-		return nil, fmt.Errorf("Error in creating dashboard table: %s", err.Error())
+		return fmt.Errorf("Error in creating dashboard table: %s", err.Error())
 	}
 
 	table_schema = `CREATE TABLE IF NOT EXISTS rules (
@@ -48,7 +57,7 @@ func InitDB(dataSourceName string) (*sqlx.DB, error) {
 
 	_, err = db.Exec(table_schema)
 	if err != nil {
-		return nil, fmt.Errorf("Error in creating rules table: %s", err.Error())
+		return fmt.Errorf("Error in creating rules table: %s", err.Error())
 	}
 
 	table_schema = `CREATE TABLE IF NOT EXISTS notification_channels (
@@ -63,10 +72,57 @@ func InitDB(dataSourceName string) (*sqlx.DB, error) {
 
 	_, err = db.Exec(table_schema)
 	if err != nil {
-		return nil, fmt.Errorf("Error in creating notification_channles table: %s", err.Error())
+		return fmt.Errorf("Error in creating notification_channles table: %s", err.Error())
 	}
 
-	return db, nil
+	return nil
+}
+
+// InitPG sets up model (tables) in the database
+func initPG(conn *sqlx.DB) error {
+	var err error
+
+	table_schema := `CREATE TABLE IF NOT EXISTS dashboards (
+		id SERIAL PRIMARY KEY,
+		uuid TEXT NOT NULL UNIQUE,
+		created_at timestamp NOT NULL,
+		updated_at timestamp NOT NULL,
+		data JSONB NOT NULL
+	);`
+
+	_, err = db.Exec(table_schema)
+	if err != nil {
+		return fmt.Errorf("Error in creating dashboard table: %s", err.Error())
+	}
+
+	table_schema = `CREATE TABLE IF NOT EXISTS rules (
+		id SERIAL PRIMARY KEY,
+		updated_at timestamp NOT NULL,
+		deleted bool DEFAULT false NOT NULL,
+		data TEXT NOT NULL
+	);`
+
+	_, err = db.Exec(table_schema)
+	if err != nil {
+		return fmt.Errorf("Error in creating rules table: %s", err.Error())
+	}
+
+	table_schema = `CREATE TABLE IF NOT EXISTS notification_channels (
+		id SERIAL PRIMARY KEY,
+		created_at timestamp NOT NULL,
+		updated_at timestamp NOT NULL,
+		name TEXT NOT NULL UNIQUE,
+		type TEXT NOT NULL,
+		deleted bool DEFAULT false NOT NULL,
+		data JSONB NOT NULL
+	);`
+
+	_, err = db.Exec(table_schema)
+	if err != nil {
+		return fmt.Errorf("Error in creating notification_channles table: %s", err.Error())
+	}
+
+	return nil
 }
 
 type Dashboard struct {
@@ -117,15 +173,14 @@ func CreateDashboard(data map[string]interface{}) (*Dashboard, *model.ApiError) 
 		zap.S().Errorf("Error in marshalling data field in dashboard: ", dash, err)
 		return nil, &model.ApiError{Typ: model.ErrorExec, Err: err}
 	}
-
+	var lastInsertId int64
 	// db.Prepare("Insert into dashboards where")
-	result, err := db.Exec("INSERT INTO dashboards (uuid, created_at, updated_at, data) VALUES ($1, $2, $3, $4)", dash.Uuid, dash.CreatedAt, dash.UpdatedAt, map_data)
+	err = db.QueryRow("INSERT INTO dashboards (uuid, created_at, updated_at, data) VALUES ($1, $2, $3, $4) RETURNING id", dash.Uuid, dash.CreatedAt, dash.UpdatedAt, map_data).Scan(&lastInsertId)
 
 	if err != nil {
 		zap.S().Errorf("Error in inserting dashboard data: ", dash, err)
 		return nil, &model.ApiError{Typ: model.ErrorExec, Err: err}
 	}
-	lastInsertId, err := result.LastInsertId()
 
 	if err != nil {
 		return nil, &model.ApiError{Typ: model.ErrorExec, Err: err}
