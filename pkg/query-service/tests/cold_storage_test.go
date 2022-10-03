@@ -212,7 +212,7 @@ func TestMain(m *testing.M) {
 	if err := startCluster(); err != nil {
 		fmt.Println(err)
 	}
-	defer stopCluster()
+	// defer stopCluster()
 
 	m.Run()
 }
