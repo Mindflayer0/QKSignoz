@@ -33,13 +33,13 @@ export const getPreLayouts = (
 	layout.map((e, index) => ({
 		...e,
 		Component: ({ setLayout }: ComponentProps): JSX.Element => {
-			const widget = widgets?.find((widget) => widget.id === e.i);
+			const selectedWidget = widgets?.find((widget) => widget.id === e.i);
 
 			return (
 				<Graph
 					name={e.i + index}
-					widget={widget as Widgets}
-					yAxisUnit={widget?.yAxisUnit}
+					widget={selectedWidget as Widgets}
+					yAxisUnit={selectedWidget?.yAxisUnit}
 					layout={layout}
 					setLayout={setLayout}
 				/>

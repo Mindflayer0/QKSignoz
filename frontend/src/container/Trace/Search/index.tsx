@@ -47,8 +47,8 @@ function Search({
 		setValue(search);
 	};
 
-	const setIsTagsModalHandler = (value: boolean): void => {
-		updateTagVisibility(value);
+	const setIsTagsModalHandler = (isVisible: boolean): void => {
+		updateTagVisibility(isVisible);
 	};
 
 	const updateFilters = async (

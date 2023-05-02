@@ -41,7 +41,7 @@ function FilteredTable({
 			</TableHeaderContainer>
 
 			{tags.map((e, index) => {
-				const tagsValue = e.split('+').filter((e) => e);
+				const tagsValue = e.split('+').filter((tag) => tag);
 				const tagsAlert: Alerts[] = tagsAlerts[index];
 
 				if (tagsAlert.length === 0) {
@@ -52,15 +52,18 @@ function FilteredTable({
 				const keysArray = Object.keys(objects);
 				const valueArray: string[] = [];
 
-				keysArray.forEach((e) => {
-					valueArray.push(objects[e]);
+				keysArray.forEach((key) => {
+					valueArray.push(objects[key]);
 				});
 
-				const tags = tagsValue
-					.map((e) => keysArray[valueArray.findIndex((value) => value === e) || 0])
-					.map((e, index) => `${e}:${tagsValue[index]}`);
+				const tagsLocal = tagsValue
+					.map(
+						(tagValue) =>
+							keysArray[valueArray.findIndex((value) => value === tagValue) || 0],
+					)
+					.map((tag, indexLocal) => `${tag}:${tagsValue[indexLocal]}`);
 
-				return <TableRowComponent key={e} tagsAlert={tagsAlert} tags={tags} />;
+				return <TableRowComponent key={e} tagsAlert={tagsAlert} tags={tagsLocal} />;
 			})}
 		</Container>
 	);

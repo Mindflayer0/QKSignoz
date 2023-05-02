@@ -109,8 +109,8 @@ function SingleTags(props: AllTagsProps): JSX.Element {
 		BoolValues: selectedBoolValues,
 	} = tag;
 
-	const onDeleteTagHandler = (index: number): void => {
-		onCloseHandler(index);
+	const onDeleteTagHandler = (deletedTagIndex: number): void => {
+		onCloseHandler(deletedTagIndex);
 	};
 
 	const onChangeOperatorHandler = (key: unknown): void => {

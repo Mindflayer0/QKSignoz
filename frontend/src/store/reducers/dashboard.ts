@@ -34,7 +34,7 @@ const InitialValue: InitialValueTypes = {
 	isAddWidget: false,
 };
 
-const dashboard = (
+const dashboardReducer = (
 	state = InitialValue,
 	action: DashboardActions,
 	// eslint-disable-next-line sonarjs/cognitive-complexity
@@ -421,4 +421,4 @@ const dashboard = (
 	}
 };
 
-export default dashboard;
+export default dashboardReducer;

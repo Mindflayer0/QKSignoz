@@ -25,8 +25,8 @@ function ToggleAlertState({
 	const defaultErrorMessage = 'Something went wrong';
 
 	const onToggleHandler = async (
-		id: number,
-		disabled: boolean,
+		ruleId: number,
+		isDisabled: boolean,
 	): Promise<void> => {
 		try {
 			setAPIStatus((state) => ({
@@ -35,9 +35,9 @@ function ToggleAlertState({
 			}));
 
 			const response = await patchAlert({
-				id,
+				id: ruleId,
 				data: {
-					disabled,
+					disabled: isDisabled,
 				},
 			});
 

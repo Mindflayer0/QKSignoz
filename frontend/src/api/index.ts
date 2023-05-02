@@ -37,15 +37,15 @@ const interceptorRejected = async (
 			const { response } = value;
 			// reject the refresh token error
 			if (response.status === 401 && response.config.url !== '/login') {
-				const response = await loginApi({
+				const loginApiResponse = await loginApi({
 					refreshToken: store.getState().app.user?.refreshJwt,
 				});
 
-				if (response.statusCode === 200) {
+				if (loginApiResponse.statusCode === 200) {
 					const user = await afterLogin(
-						response.payload.userId,
-						response.payload.accessJwt,
-						response.payload.refreshJwt,
+						loginApiResponse.payload.userId,
+						loginApiResponse.payload.accessJwt,
+						loginApiResponse.payload.refreshJwt,
 					);
 
 					if (user) {
@@ -55,7 +55,7 @@ const interceptorRejected = async (
 								method: value.config.method,
 								headers: {
 									...value.config.headers,
-									Authorization: `Bearer ${response.payload.accessJwt}`,
+									Authorization: `Bearer ${loginApiResponse.payload.accessJwt}`,
 								},
 								data: {
 									...JSON.parse(value.config.data || '{}'),

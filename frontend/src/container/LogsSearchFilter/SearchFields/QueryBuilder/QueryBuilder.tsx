@@ -203,10 +203,10 @@ function QueryBuilder({
 	};
 
 	const QueryUI = (
-		fieldsQuery: QueryFields[][],
+		fieldsQueryUI: QueryFields[][],
 	): JSX.Element | JSX.Element[] => {
 		const result: JSX.Element[] = [];
-		fieldsQuery.forEach((query, idx) => {
+		fieldsQueryUI.forEach((query, idx) => {
 			if (Array.isArray(query) && query.length > 1) {
 				result.push(
 					<QueryField

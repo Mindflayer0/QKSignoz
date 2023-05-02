@@ -21,7 +21,7 @@ function DynamicConfigDropdown({
 	const isDarkMode = useIsDarkMode();
 	const [isHelpDropDownOpen, setIsHelpDropDownOpen] = useState<boolean>(false);
 
-	const config = useMemo(
+	const currentConfig = useMemo(
 		() =>
 			Object.values(configs).find(
 				(config) => config.frontendPositionId === frontendId,
@@ -38,14 +38,14 @@ function DynamicConfigDropdown({
 			items: [
 				{
 					key: '1',
-					label: <HelpToolTip config={config as ConfigProps} />,
+					label: <HelpToolTip config={currentConfig as ConfigProps} />,
 				},
 			],
 		}),
-		[config],
+		[currentConfig],
 	);
 
-	if (!config) {
+	if (!currentConfig) {
 		return <div />;
 	}
 
