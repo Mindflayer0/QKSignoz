@@ -16,14 +16,15 @@ import { useParams } from 'react-router-dom';
 import { Widgets } from 'types/api/dashboard/getAll';
 import { EQueryType } from 'types/common/dashboard';
 
-import { Card, GraphContainer, GraphTitle, Row } from '../styles';
-import { legend } from './constant';
-import { Button } from './styles';
+import { Card, GraphContainer, GraphTitle, Row } from '../../styles';
+import { legend } from '../constant';
+import { Button } from '../styles';
 import {
 	handleNonInQueryRange,
 	onGraphClickHandler,
 	onViewTracePopupClick,
-} from './util';
+} from '../util';
+import Table from './Table';
 
 function External({ getWidgetQueryBuilder }: ExternalProps): JSX.Element {
 	const [selectedTimeStamp, setSelectedTimeStamp] = useState<number>(0);
@@ -252,6 +253,13 @@ function External({ getWidgetQueryBuilder }: ExternalProps): JSX.Element {
 					</Card>
 				</Col>
 			</Row>
+			{servicename && (
+				<Row>
+					<Col span={24}>
+						<Table widgetId="external-calls-table" serviceName={servicename} />
+					</Col>
+				</Row>
+			)}
 		</>
 	);
 }
