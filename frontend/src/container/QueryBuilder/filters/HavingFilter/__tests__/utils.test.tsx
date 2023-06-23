@@ -5,6 +5,7 @@ import {
 	HAVING_OPERATORS,
 	initialQueryBuilderFormValuesMap,
 } from 'constants/queryBuilder';
+import { HAVING_SELECT_ID } from 'constants/testIds';
 import { transformFromStringToHaving } from 'lib/query/transformQueryBuilderData';
 // ** Types
 import { IBuilderQuery } from 'types/api/queryBuilder/queryBuilderData';
@@ -33,9 +34,7 @@ describe('Having filter behaviour', () => {
 			/>,
 		);
 
-		const selectId = 'havingSelect';
-
-		const select = screen.getByTestId(selectId);
+		const select = screen.getByTestId(HAVING_SELECT_ID);
 
 		expect(select).toBeInTheDocument();
 
