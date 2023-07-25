@@ -79,6 +79,9 @@ type Server struct {
 	featureLookup baseint.FeatureLookup
 
 	unavailableChannel chan healthcheck.Status
+
+	apiHandler     *api.APIHandler
+	patRateLimiter *RateLimiter
 }
 
 // HealthCheckStatus returns health check status channel a client can subscribe to
@@ -191,8 +194,14 @@ func NewServer(serverOptions *ServerOptions) (*Server, error) {
 		ruleManager:        rm,
 		serverOptions:      serverOptions,
 		unavailableChannel: make(chan healthcheck.Status),
+
+		apiHandler: apiHandler,
+		// Allows 100 requests per second, with maximum burst of 50 at a time.
+		// TODO(ahsanb): Figure out the right rate limit.
+		patRateLimiter: NewRateLimiter(100, 50),
 	}
 
+	// TODO(ahsanb): Check if there is a need to pass apiHandler any more.
 	httpServer, err := s.createPublicServer(apiHandler)
 
 	if err != nil {
@@ -260,6 +269,7 @@ func (s *Server) createPublicServer(apiHandler *api.APIHandler) (*http.Server, e
 		return baseauth.GetUserFromRequest(r)
 	}
 	am := baseapp.NewAuthMiddleware(getUserFromRequest)
+	r.Use(s.rateLimitMiddleware)
 	r.Use(setTimeoutMiddleware)
 	r.Use(s.analyticsMiddleware)
 	r.Use(loggingMiddleware)
@@ -282,6 +292,45 @@ func (s *Server) createPublicServer(apiHandler *api.APIHandler) (*http.Server, e
 	return &http.Server{
 		Handler: handler,
 	}, nil
+}
+
+func (s *Server) rateLimitMiddleware(next http.Handler) http.Handler {
+	isValidUser := func(patToken string) bool {
+		ctx := context.Background()
+		dao := s.apiHandler.AppDao()
+
+		user, err := dao.GetUserByPAT(ctx, patToken)
+		if err != nil {
+			zap.S().Debugf("[rateLimitMiddleware] Error while getting user for PAT: %v", err)
+			return false
+		}
+		if user != nil {
+			return true
+		}
+		return false
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		patToken := r.Header.Get("SIGNOZ-API-KEY")
+		if len(patToken) > 0 {
+
+			// If the rate limiter doesn't know about this token, verify that it is a
+			// valid PAT token and let rate-limiter know about it.
+			// If it is invalid token, then no need to add it to the rate limiter in order to
+			// ensure that the rate limiter's map size is bounded to valid PATs.
+			if !s.patRateLimiter.LimitsIdentifier(patToken) {
+				if isValidUser(patToken) {
+					s.patRateLimiter.AddIdentifier(patToken)
+				}
+			}
+
+			if err := s.patRateLimiter.Limit(patToken); err != nil {
+				s.apiHandler.HandleError(w, err, http.StatusTooManyRequests)
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 // loggingMiddleware is used for logging public api calls
