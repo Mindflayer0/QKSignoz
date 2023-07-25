@@ -3,7 +3,6 @@ import { useMachine } from '@xstate/react';
 import { Button, Select } from 'antd';
 import { RefSelectProps } from 'antd/lib/select';
 import history from 'lib/history';
-import { filter, map } from 'lodash-es';
 import {
 	MutableRefObject,
 	useCallback,
@@ -113,7 +112,7 @@ function SearchFilter({
 
 	const removeQueryById = (queryId: string): void => {
 		setQueries((queries) => {
-			const updatedQueries = filter(queries, ({ id }) => id !== queryId);
+			const updatedQueries = queries.filter(({ id }) => id !== queryId);
 			updateURLWithQuery(updatedQueries);
 			return updatedQueries;
 		});
@@ -158,10 +157,10 @@ function SearchFilter({
 	return (
 		<SearchContainer>
 			<div>
-				{map(queries, (query) => (
+				{queries.map((query) => (
 					<QueryChip key={query.id} queryData={query} onRemove={removeQueryById} />
 				))}
-				{map(staging, (value) => (
+				{staging.map((value) => (
 					<QueryChipItem key={JSON.stringify(value)}>
 						{value as string}
 					</QueryChipItem>
