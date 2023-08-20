@@ -1,27 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-// Constants
 import {
 	HAVING_OPERATORS,
 	initialQueryBuilderFormValuesMap,
 } from 'constants/queryBuilder';
+import { valueWithAttributeAndOperator } from 'container/QueryBuilder/mock/queryData';
 import { transformFromStringToHaving } from 'lib/query/transformQueryBuilderData';
+
 // ** Types
-import { IBuilderQuery } from 'types/api/queryBuilder/queryBuilderData';
-
-// ** Components
 import { HavingFilter } from '../HavingFilter';
-
-const valueWithAttributeAndOperator: IBuilderQuery = {
-	...initialQueryBuilderFormValuesMap.logs,
-	aggregateOperator: 'SUM',
-	aggregateAttribute: {
-		isColumn: false,
-		key: 'bytes',
-		type: 'tag',
-		dataType: 'float64',
-	},
-};
 
 describe('Having filter behaviour', () => {
 	test('Having filter render is rendered', () => {
