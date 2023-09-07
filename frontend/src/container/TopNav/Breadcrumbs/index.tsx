@@ -49,7 +49,7 @@ function ShowBreadcrumbs(props: RouteComponentProps): JSX.Element {
 
 	const breadcrumbItems = [
 		<Breadcrumb.Item key="home">
-			<Link to="/">Home</Link>
+			<Link to={ROUTES.APPLICATION}>Home</Link>
 		</Breadcrumb.Item>,
 	].concat(extraBreadcrumbItems);
 

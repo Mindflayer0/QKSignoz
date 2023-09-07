@@ -27,19 +27,29 @@ export const useAutoComplete = (
 	const [searchValue, setSearchValue] = useState<string>('');
 	const [searchKey, setSearchKey] = useState<string>('');
 
-	const { keys, results, isFetching } = useFetchKeysAndValues(
-		searchValue,
-		query,
-		searchKey,
-	);
+	const {
+		keys,
+		results,
+		isFetching,
+		isValuesLoading,
+		isError,
+		handleResetValues,
+	} = useFetchKeysAndValues(searchValue, query, searchKey);
 
 	const [key, operator, result] = useSetCurrentKeyAndOperator(searchValue, keys);
 
-	const handleSearch = (value: string): void => {
-		const prefixFreeValue = getRemovePrefixFromKey(getTagToken(value).tagKey);
-		setSearchValue(value);
-		setSearchKey(prefixFreeValue);
-	};
+	const handleSearch = useCallback(
+		(value: string): void => {
+			const prefixFreeValue = getRemovePrefixFromKey(getTagToken(value).tagKey);
+
+			setSearchValue(value);
+			setSearchKey(prefixFreeValue);
+
+			if (!searchValue) return;
+			handleResetValues();
+		},
+		[searchValue, handleResetValues],
+	);
 
 	const { isValidTag, isExist, isValidOperator, isMulti } = useTagValidation(
 		operator,
@@ -122,6 +132,8 @@ export const useAutoComplete = (
 		searchValue,
 		isMulti,
 		isFetching,
+		isValuesLoading,
+		isError,
 		setSearchKey,
 		searchKey,
 	};
@@ -138,6 +150,8 @@ interface IAutoComplete {
 	searchValue: string;
 	isMulti: boolean;
 	isFetching: boolean;
+	isValuesLoading: boolean;
+	isError: boolean;
 	setSearchKey: (value: string) => void;
 	searchKey: string;
 }
