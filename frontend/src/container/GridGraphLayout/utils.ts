@@ -59,11 +59,16 @@ export const UpdateDashboard = async (
 		if (response.statusCode === 200) {
 			return response.payload;
 		}
+
 		notify.error({
 			message: response.error || 'Something went wrong',
 		});
-		return undefined;
 	}
+
+	if (response.error) {
+		throw Error(response.error);
+	}
+
 	return undefined;
 };
 
