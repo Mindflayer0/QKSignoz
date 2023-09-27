@@ -14,6 +14,8 @@ import {
 	GET_DASHBOARD_SUCCESS,
 	IS_ADD_WIDGET,
 	SAVE_SETTING_TO_PANEL_SUCCESS,
+	SET_CONFIGURE_DRAWER_VISIBLE,
+	SET_GEN_CONFIG_SAVING,
 	TOGGLE_EDIT_MODE,
 	UPDATE_DASHBOARD,
 	UPDATE_DASHBOARD_VARIABLES,
@@ -29,6 +31,8 @@ const InitialValue: InitialValueTypes = {
 	errorMessage: '',
 	isEditMode: false,
 	isAddWidget: false,
+	isConfigureDrawerVisible: false,
+	isGeneralConfigSaving: false,
 };
 
 const dashboard = (
@@ -321,6 +325,18 @@ const dashboard = (
 						},
 					},
 				],
+			};
+		}
+		case SET_CONFIGURE_DRAWER_VISIBLE: {
+			return {
+				...state,
+				isConfigureDrawerVisible: action.payload,
+			};
+		}
+		case SET_GEN_CONFIG_SAVING: {
+			return {
+				...state,
+				isGeneralConfigSaving: action.payload,
 			};
 		}
 		default:
