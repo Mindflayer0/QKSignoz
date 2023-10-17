@@ -2,9 +2,9 @@
 	display: flex;
 	align-items: flex-start;
 	width: 100%;
-	gap: 16px;
+	gap: $size-4;
 
 	& .ant-form-item {
-		margin-bottom: 0px;
+		margin-bottom: $size-0;
 	}
 }
