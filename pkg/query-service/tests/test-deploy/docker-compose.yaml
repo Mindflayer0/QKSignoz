@@ -1,7 +1,7 @@
 version: "2.4"
 
 x-clickhouse-defaults: &clickhouse-defaults
-  restart: on-failure
+  restart: unless-stopped
   image: clickhouse/clickhouse-server:23.7.3-alpine
   tty: true
   depends_on:
@@ -145,7 +145,7 @@ services:
     depends_on:
       query-service:
         condition: service_healthy
-    restart: on-failure
+    restart: unless-stopped
     command:
       - --queryService.url=http://query-service:8085
       - --storage.path=/data
@@ -176,7 +176,7 @@ services:
       - GODEBUG=netdns=go
       - TELEMETRY_ENABLED=true
       - DEPLOYMENT_TYPE=docker-standalone-amd
-    restart: on-failure
+    restart: unless-stopped
     healthcheck:
       test:
         [
@@ -235,7 +235,7 @@ services:
       # - "14268:14268"   # Jaeger thrift HTTP
       # - "55678:55678"   # OpenCensus receiver
       # - "55679:55679"   # zPages extension
-    restart: on-failure
+    restart: unless-stopped
     depends_on:
       clickhouse:
         condition: service_healthy
@@ -259,7 +259,7 @@ services:
     #   - "8888:8888"     # OtelCollector internal metrics
     #   - "13133:13133"   # Health check extension
     #   - "55679:55679"   # zPages extension
-    restart: on-failure
+    restart: unless-stopped
     <<: *db-depend
 
   logspout:

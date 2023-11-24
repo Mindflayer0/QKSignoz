@@ -30,7 +30,7 @@ services:
     ports:
       - "6060:6060"
       - "8080:8080"
-    restart: on-failure
+    restart: unless-stopped
     healthcheck:
       test:
         [
@@ -57,7 +57,7 @@ services:
     container_name: signoz-frontend
     environment:
       - FRONTEND_API_ENDPOINT=http://query-service:8080
-    restart: on-failure
+    restart: unless-stopped
     depends_on:
       - alertmanager
       - query-service

@@ -5,7 +5,7 @@ x-clickhouse-defaults: &clickhouse-defaults
   tty: true
   deploy:
     restart_policy:
-      condition: on-failure
+      condition: unless-stopped
   depends_on:
     - zookeeper-1
     # - zookeeper-2
@@ -143,7 +143,7 @@ services:
       - query-service
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: unless-stopped
 
   query-service:
     image: signoz/query-service:0.34.3
@@ -182,14 +182,14 @@ services:
       retries: 3
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: unless-stopped
     <<: *db-depend
 
   frontend:
     image: signoz/frontend:0.34.3
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: unless-stopped
     depends_on:
       - alertmanager
       - query-service
@@ -230,7 +230,7 @@ services:
     deploy:
       mode: global
       restart_policy:
-        condition: on-failure
+        condition: unless-stopped
     depends_on:
       - clickhouse
       - otel-collector-migrator
@@ -265,7 +265,7 @@ services:
     #   - "55679:55679"   # zPages extension
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: unless-stopped
     <<: *db-depend
 
   logspout:
