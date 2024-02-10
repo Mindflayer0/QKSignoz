@@ -42,7 +42,6 @@ import (
 	baseconst "go.signoz.io/signoz/pkg/query-service/constants"
 	"go.signoz.io/signoz/pkg/query-service/healthcheck"
 	basealm "go.signoz.io/signoz/pkg/query-service/integrations/alertManager"
-	baseint "go.signoz.io/signoz/pkg/query-service/interfaces"
 	basemodel "go.signoz.io/signoz/pkg/query-service/model"
 	pqle "go.signoz.io/signoz/pkg/query-service/pqlEngine"
 	rules "go.signoz.io/signoz/pkg/query-service/rules"
@@ -87,7 +86,7 @@ type Server struct {
 	privateHTTP *http.Server
 
 	// feature flags
-	featureLookup baseint.FeatureLookup
+	featureLookup baseInterface.FeatureLookup
 
 	// Usage manager
 	usageManager *usage.Manager
@@ -642,7 +641,7 @@ func makeRulesManager(
 	alertManagerURL string,
 	ruleRepoURL string,
 	db *sqlx.DB,
-	ch baseint.Reader,
+	ch baseInterface.Reader,
 	disableRules bool,
 	fm baseInterface.FeatureLookup) (*rules.Manager, error) {
 

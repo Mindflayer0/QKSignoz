@@ -233,7 +233,8 @@ func (qb *QueryBuilder) PrepareQueries(params *v3.QueryRangeParamsV3, args ...in
 						queries[queryName] = queryString
 					}
 				case v3.DataSourceMetrics:
-					queryString, err := qb.options.BuildMetricQuery(params.Start, params.End, compositeQuery.QueryType, compositeQuery.PanelType, query, metricsV3.Options{PreferRPM: PreferRPMFeatureEnabled})
+					metricsOptions := metricsV3.Options{PreferRPM: PreferRPMFeatureEnabled}
+					queryString, err := qb.options.BuildMetricQuery(params.Start, params.End, compositeQuery.QueryType, compositeQuery.PanelType, query, metricsOptions)
 					if err != nil {
 						return nil, err
 					}

@@ -531,7 +531,7 @@ func (aH *APIHandler) metricAutocompleteTagValue(w http.ResponseWriter, r *http.
 	aH.Respond(w, tagValueList)
 }
 
-func (aH *APIHandler) addTemporality(ctx context.Context, qp *v3.QueryRangeParamsV3) error {
+func (aH *APIHandler) AddTemporality(ctx context.Context, qp *v3.QueryRangeParamsV3) error {
 
 	metricNames := make([]string, 0)
 	metricNameToTemporality := make(map[string]map[v3.Temporality]bool)
@@ -3031,7 +3031,7 @@ func (aH *APIHandler) QueryRangeV3Format(w http.ResponseWriter, r *http.Request)
 	aH.Respond(w, queryRangeParams)
 }
 
-func (aH *APIHandler) queryRangeV3(ctx context.Context, queryRangeParams *v3.QueryRangeParamsV3, w http.ResponseWriter, r *http.Request) {
+func (aH *APIHandler) ExecQueryRangeV3(ctx context.Context, queryRangeParams *v3.QueryRangeParamsV3, w http.ResponseWriter, r *http.Request) {
 
 	var result []*v3.Result
 	var err error
@@ -3097,14 +3097,14 @@ func (aH *APIHandler) QueryRangeV3(w http.ResponseWriter, r *http.Request) {
 
 	// add temporality for each metric
 
-	temporalityErr := aH.addTemporality(r.Context(), queryRangeParams)
+	temporalityErr := aH.AddTemporality(r.Context(), queryRangeParams)
 	if temporalityErr != nil {
 		zap.S().Errorf("Error while adding temporality for metrics: %v", temporalityErr)
 		RespondError(w, &model.ApiError{Typ: model.ErrorInternal, Err: temporalityErr}, nil)
 		return
 	}
 
-	aH.queryRangeV3(r.Context(), queryRangeParams, w, r)
+	aH.ExecQueryRangeV3(r.Context(), queryRangeParams, w, r)
 }
 
 func (aH *APIHandler) liveTailLogs(w http.ResponseWriter, r *http.Request) {

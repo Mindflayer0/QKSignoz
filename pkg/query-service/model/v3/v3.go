@@ -354,6 +354,7 @@ type QueryRangeParamsV3 struct {
 	CompositeQuery *CompositeQuery        `json:"compositeQuery"`
 	Variables      map[string]interface{} `json:"variables,omitempty"`
 	NoCache        bool                   `json:"noCache"`
+	SourcePage     string                 `json:"sourcePage"`
 }
 
 type PromQuery struct {
@@ -587,6 +588,11 @@ type BuilderQuery struct {
 	TimeAggregation    TimeAggregation   `json:"timeAggregation,omitempty"`
 	SpaceAggregation   SpaceAggregation  `json:"spaceAggregation,omitempty"`
 	Functions          []Function        `json:"functions,omitempty"`
+	QueryLimits        QueryLimits
+}
+
+type QueryLimits struct {
+	MaxTimeSeries int
 }
 
 func (b *BuilderQuery) Validate() error {
