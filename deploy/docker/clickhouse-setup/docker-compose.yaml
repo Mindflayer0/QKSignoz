@@ -164,16 +164,17 @@ services:
   # Notes for Maintainers/Contributors who will change Line Numbers of Frontend & Query-Section. Please Update Line Numbers in `./scripts/commentLinesForSetup.sh` & `./CONTRIBUTING.md`
 
   query-service:
-    image: signoz/query-service:${DOCKER_TAG:-0.43.0}
+    image: signoz/query-service:custom
     container_name: signoz-query-service
+    pull_policy: never
     command:
       [
         "-config=/root/config/prometheus.yml",
         # "--prefer-delta=true"
       ]
-    # ports:
+    ports:
     #   - "6060:6060"     # pprof port
-    #   - "8080:8080"     # query-service port
+      - "8080:8080"     # query-service port
     volumes:
       - ./prometheus.yml:/root/config/prometheus.yml
       - ../dashboards:/root/config/dashboards
