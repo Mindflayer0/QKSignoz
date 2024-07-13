@@ -1025,6 +1025,7 @@ type LogsLiveTailClient struct {
 }
 
 type Series struct {
+	Title       string              `json:"title"`
 	Labels      map[string]string   `json:"labels"`
 	LabelsArray []map[string]string `json:"labelsArray"`
 	Points      []Point             `json:"values"`
@@ -1071,6 +1072,12 @@ type Row struct {
 }
 
 type Point struct {
+	Timestamp int64
+	Value     float64
+}
+
+type NumberColumn struct {
+	Name      string
 	Timestamp int64
 	Value     float64
 }
