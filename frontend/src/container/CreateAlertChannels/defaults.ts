@@ -1,4 +1,9 @@
-import { EmailChannel, OpsgenieChannel, PagerChannel } from './config';
+import {
+	EmailChannel,
+	OpsgenieChannel,
+	PagerChannel,
+	TelegramChannel,
+} from './config';
 
 export const PagerInitialConfig: Partial<PagerChannel> = {
 	description: `[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}
@@ -49,6 +54,16 @@ export const OpsgenieInitialConfig: Partial<OpsgenieChannel> = {
 	{{- end }}`,
 	priority:
 		'{{ if eq (index .Alerts 0).Labels.severity "critical" }}P1{{ else if eq (index .Alerts 0).Labels.severity "warning" }}P2{{ else if eq (index .Alerts 0).Labels.severity "info" }}P3{{ else }}P4{{ end }}',
+};
+
+export const TelegramInitialConfig: Partial<TelegramChannel> = {
+	message: `
+    {{ if gt (len .Alerts.Firing) 0 }}
+    Alerts Firing: {{ range .Alerts.Firing }} 
+    {{ range .Annotations.SortedPairs }}  - {{ .Name }} = {{ .Value }} {{end}}
+    {{ end }}  
+    {{ end }}
+    `,
 };
 
 export const EmailInitialConfig: Partial<EmailChannel> = {

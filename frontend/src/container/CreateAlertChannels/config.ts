@@ -64,6 +64,12 @@ export interface OpsgenieChannel extends Channel {
 	priority?: string;
 }
 
+export interface TelegramChannel extends Channel {
+	token: string;
+	chat: number;
+	message: string;
+}
+
 export interface EmailChannel extends Channel {
 	// comma separated list of email addresses to send alerts to
 	to: string;
@@ -103,6 +109,7 @@ export enum ChannelType {
 	Webhook = 'webhook',
 	Pagerduty = 'pagerduty',
 	Opsgenie = 'opsgenie',
+	Telegram = 'telegram',
 	MsTeams = 'msteams',
 }
 

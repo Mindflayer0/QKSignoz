@@ -92,6 +92,13 @@ var BasicPlan = basemodel.FeatureSet{
 		Route:      "",
 	},
 	basemodel.Feature{
+		Name:       basemodel.AlertChannelTelegram,
+		Active:     true,
+		Usage:      0,
+		UsageLimit: -1,
+		Route:      "",
+	},
+	basemodel.Feature{
 		Name:       basemodel.AlertChannelEmail,
 		Active:     true,
 		Usage:      0,
@@ -193,6 +200,13 @@ var ProPlan = basemodel.FeatureSet{
 		Route:      "",
 	},
 	basemodel.Feature{
+		Name:       basemodel.AlertChannelTelegram,
+		Active:     true,
+		Usage:      0,
+		UsageLimit: -1,
+		Route:      "",
+	},
+	basemodel.Feature{
 		Name:       basemodel.AlertChannelEmail,
 		Active:     true,
 		Usage:      0,
@@ -288,6 +302,13 @@ var EnterprisePlan = basemodel.FeatureSet{
 	},
 	basemodel.Feature{
 		Name:       basemodel.AlertChannelOpsgenie,
+		Active:     true,
+		Usage:      0,
+		UsageLimit: -1,
+		Route:      "",
+	},
+	basemodel.Feature{
+		Name:       basemodel.AlertChannelTelegram,
 		Active:     true,
 		Usage:      0,
 		UsageLimit: -1,
