@@ -11,7 +11,6 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof" // http profiler
-	"os"
 	"regexp"
 	"time"
 
@@ -29,6 +28,7 @@ import (
 	"go.signoz.io/signoz/ee/query-service/integrations/gateway"
 	"go.signoz.io/signoz/ee/query-service/interfaces"
 	baseauth "go.signoz.io/signoz/pkg/query-service/auth"
+	"go.signoz.io/signoz/pkg/query-service/config"
 	"go.signoz.io/signoz/pkg/query-service/migrate"
 	"go.signoz.io/signoz/pkg/query-service/model"
 	v3 "go.signoz.io/signoz/pkg/query-service/model/v3"
@@ -142,7 +142,10 @@ func NewServer(serverOptions *ServerOptions) (*Server, error) {
 	readerReady := make(chan bool)
 
 	var reader interfaces.DataConnector
-	storage := os.Getenv("STORAGE")
+	if len(config.AppConfig.StorageType) == 0 {
+		zap.L().Warn("No StorageType env is specified.")
+	}
+	storage := config.AppConfig.StorageType
 	if storage == "clickhouse" {
 		zap.L().Info("Using ClickHouse as datastore ...")
 		qb := db.NewDataConnector(
