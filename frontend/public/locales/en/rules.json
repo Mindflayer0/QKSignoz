@@ -42,6 +42,7 @@
 	"option_intotal": "in total",
 	"option_above": "above",
 	"option_below": "below",
+	"option_above_below": "above/below",
 	"option_equal": "is equal to",
 	"option_notequal": "not equal to",
 	"button_query": "Query",

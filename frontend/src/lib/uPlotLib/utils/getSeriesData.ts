@@ -88,6 +88,10 @@ const getSeries = ({
 			},
 		};
 
+		if (label.includes('Predicted')) {
+			seriesObj.dash = [5, 5];
+		}
+
 		configurations.push(seriesObj);
 	}
 

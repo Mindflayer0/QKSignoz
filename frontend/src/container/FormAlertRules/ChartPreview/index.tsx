@@ -260,7 +260,7 @@ function ChartPreview({
 					</FailedMessageContainer>
 				)}
 
-				{chartData && !queryResponse.isError && (
+				{!queryResponse.isLoading && chartData && !queryResponse.isError && (
 					<GridPanelSwitch
 						options={options}
 						panelType={graphType}
