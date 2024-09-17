@@ -213,6 +213,10 @@ export const InstalledIntegrations = Loadable(
 		),
 );
 
+
+export const MetricsExplorer = Loadable(
+	() =>
+		import(/* webpackChunkName: "MetricsExplorer" */ 'pages/MetricsExplorer'),
 export const MessagingQueues = Loadable(
 	() =>
 		import(/* webpackChunkName: "MessagingQueues" */ 'pages/MessagingQueues'),
