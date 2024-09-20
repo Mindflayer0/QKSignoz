@@ -22,12 +22,14 @@ import { UpdateTimeInterval } from 'store/actions';
 import { SuccessResponse } from 'types/api';
 import { Widgets } from 'types/api/dashboard/getAll';
 import { MetricRangePayloadProps } from 'types/api/metrics/getQueryRange';
+import { TimeFormat } from 'utils/timeUtils';
 
 function WidgetGraph({
 	selectedWidget,
 	queryResponse,
 	setRequestData,
 	selectedGraph,
+	timeFormat,
 }: WidgetGraphProps): JSX.Element {
 	const graphRef = useRef<HTMLDivElement>(null);
 	const dispatch = useDispatch();
@@ -109,6 +111,7 @@ function WidgetGraph({
 				setRequestData={setRequestData}
 				onDragSelect={onDragSelect}
 				selectedGraph={selectedGraph}
+				timeFormat={timeFormat}
 			/>
 		</div>
 	);
@@ -122,6 +125,11 @@ interface WidgetGraphProps {
 	>;
 	setRequestData: Dispatch<SetStateAction<GetQueryResultsProps>>;
 	selectedGraph: PANEL_TYPES;
+	timeFormat?: TimeFormat.TWENTY_FOUR_HOUR | TimeFormat.TWELVE_HOUR;
 }
+
+WidgetGraph.defaultProps = {
+	timeFormat: TimeFormat.TWELVE_HOUR,
+};
 
 export default WidgetGraph;

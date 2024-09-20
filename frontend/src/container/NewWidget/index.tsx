@@ -42,6 +42,7 @@ import { DataSource } from 'types/common/queryBuilder';
 import AppReducer from 'types/reducer/app';
 import { GlobalReducer } from 'types/reducer/globalTime';
 import { getGraphType, getGraphTypeForFormat } from 'utils/getGraphType';
+import { TimeFormat } from 'utils/timeUtils';
 
 import LeftContainer from './LeftContainer';
 import QueryTypeTag from './LeftContainer/QueryTypeTag';
@@ -269,6 +270,10 @@ function NewWidget({ selectedGraph }: NewWidgetProps): JSX.Element {
 		name: getSelectedTime()?.name || '',
 		enum: selectedWidget?.timePreferance || 'GLOBAL_TIME',
 	});
+
+	const [timeFormat, setTimeFormat] = useState<
+		TimeFormat.TWENTY_FOUR_HOUR | TimeFormat.TWELVE_HOUR
+	>(TimeFormat.TWELVE_HOUR);
 
 	const updateDashboardMutation = useUpdateDashboard();
 
@@ -652,6 +657,7 @@ function NewWidget({ selectedGraph }: NewWidgetProps): JSX.Element {
 								requestData={requestData}
 								setRequestData={setRequestData}
 								isLoadingPanelData={isLoadingPanelData}
+								timeFormat={timeFormat}
 							/>
 						)}
 					</OverlayScrollbar>
@@ -695,6 +701,8 @@ function NewWidget({ selectedGraph }: NewWidgetProps): JSX.Element {
 							setSoftMin={setSoftMin}
 							softMax={softMax}
 							setSoftMax={setSoftMax}
+							setTimeFormat={setTimeFormat}
+							timeFormat={timeFormat}
 						/>
 					</OverlayScrollbar>
 				</RightContainerWrapper>

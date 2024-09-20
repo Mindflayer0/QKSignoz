@@ -7,6 +7,7 @@ import { UseQueryResult } from 'react-query';
 import { SuccessResponse } from 'types/api';
 import { Widgets } from 'types/api/dashboard/getAll';
 import { MetricRangePayloadProps } from 'types/api/metrics/getQueryRange';
+import { TimeFormat } from 'utils/timeUtils';
 
 export type PanelWrapperProps = {
 	queryResponse: UseQueryResult<
@@ -24,6 +25,7 @@ export type PanelWrapperProps = {
 	selectedGraph?: PANEL_TYPES;
 	tableProcessedDataRef?: React.MutableRefObject<RowData[]>;
 	customTooltipElement?: HTMLDivElement;
+	timeFormat?: TimeFormat.TWENTY_FOUR_HOUR | TimeFormat.TWELVE_HOUR;
 };
 
 export type TooltipData = {

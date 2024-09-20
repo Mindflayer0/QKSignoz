@@ -16,6 +16,7 @@ import { MetricRangePayloadProps } from 'types/api/metrics/getQueryRange';
 import { Query } from 'types/api/queryBuilder/queryBuilderData';
 import { QueryData, QueryDataV3 } from 'types/api/widgets/getQuery';
 import uPlot from 'uplot';
+import { TimeFormat } from 'utils/timeUtils';
 
 import onClickPlugin, { OnClickPluginOpts } from './plugins/onClickPlugin';
 import tooltipPlugin from './plugins/tooltipPlugin';
@@ -54,6 +55,7 @@ export interface GetUPlotChartOptions {
 		}>
 	>;
 	customTooltipElement?: HTMLDivElement;
+	timeFormat?: TimeFormat.TWENTY_FOUR_HOUR | TimeFormat.TWELVE_HOUR;
 }
 
 /** the function converts series A , series B , series C to
@@ -156,6 +158,7 @@ export const getUPlotChartOptions = ({
 	hiddenGraph,
 	setHiddenGraph,
 	customTooltipElement,
+	timeFormat,
 }: GetUPlotChartOptions): uPlot.Options => {
 	const timeScaleProps = getXAxisScale(minTimeScale, maxTimeScale);
 
@@ -355,6 +358,6 @@ export const getUPlotChartOptions = ({
 			hiddenGraph,
 			isDarkMode,
 		}),
-		axes: getAxes(isDarkMode, yAxisUnit),
+		axes: getAxes(isDarkMode, yAxisUnit, timeFormat),
 	};
 };

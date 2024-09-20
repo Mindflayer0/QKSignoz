@@ -30,6 +30,7 @@ import { AppState } from 'store/reducers';
 import { GlobalReducer } from 'types/reducer/globalTime';
 import { getGraphType } from 'utils/getGraphType';
 import { getSortedSeriesData } from 'utils/getSortedSeriesData';
+import { TimeFormat } from 'utils/timeUtils';
 
 import { getLocalStorageGraphVisibilityState } from '../utils';
 import { PANEL_TYPES_VS_FULL_VIEW_TABLE } from './contants';
@@ -172,6 +173,10 @@ function FullView({
 
 	const isListView = widget.panelTypes === PANEL_TYPES.LIST;
 
+	const [timeFormat, setTimeFormat] = useState<
+		TimeFormat.TWENTY_FOUR_HOUR | TimeFormat.TWELVE_HOUR
+	>(TimeFormat.TWELVE_HOUR);
+
 	if (response.isLoading && widget.panelTypes !== PANEL_TYPES.LIST) {
 		return <Spinner height="100%" size="large" tip="Loading..." />;
 	}
@@ -187,6 +192,9 @@ function FullView({
 						<TimePreference
 							selectedTime={selectedTime}
 							setSelectedTime={setSelectedTime}
+							timeFormat={timeFormat}
+							setTimeFormat={setTimeFormat}
+							panelType={widget.panelTypes}
 						/>
 						<Button
 							style={{
@@ -226,6 +234,7 @@ function FullView({
 						graphVisibility={graphsVisibilityStates}
 						onDragSelect={onDragSelect}
 						tableProcessedDataRef={tableProcessedDataRef}
+						timeFormat={timeFormat}
 					/>
 				</GraphContainer>
 			</div>
