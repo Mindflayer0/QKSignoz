@@ -1,3 +1,5 @@
+import { SorterResult } from 'antd/es/table/interface';
+import { TableProps } from 'antd/lib';
 import { ResizeTable } from 'components/ResizeTable';
 import { DEFAULT_ENTITY_VERSION } from 'constants/app';
 import { LOCALSTORAGE } from 'constants/localStorage';
@@ -16,9 +18,17 @@ import { getDraggedColumns } from 'hooks/useDragColumns/utils';
 import useUrlQueryData from 'hooks/useUrlQueryData';
 import history from 'lib/history';
 import { RowData } from 'lib/query/createTableColumnsFromQuery';
-import { HTMLAttributes, memo, useCallback, useMemo } from 'react';
+import {
+	HTMLAttributes,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from 'store/reducers';
+import { IBuilderQuery, Query } from 'types/api/queryBuilder/queryBuilderData';
 import { DataSource } from 'types/common/queryBuilder';
 import { GlobalReducer } from 'types/reducer/globalTime';
 
@@ -27,12 +37,44 @@ import { defaultSelectedColumns, PER_PAGE_OPTIONS } from './configs';
 import { Container, ErrorText, tableStyles } from './styles';
 import { getListColumns, getTraceLink, transformDataWithDate } from './utils';
 
+enum SortOrderMap {
+	'descend' = 'desc',
+	'ascend' = 'asc',
+	null = 'null',
+}
+
+const updateOrderBy = (
+	item: IBuilderQuery,
+	sortOrderBy?: any,
+): IBuilderQuery => {
+	if (!sortOrderBy || !sortOrderBy.order) {
+		if (sortOrderBy?.columnName) {
+			return {
+				...item,
+				orderBy: item.orderBy.filter(
+					(order) => order.columnName !== sortOrderBy?.columnName,
+				),
+			};
+		}
+		return { ...item };
+	}
+
+	return {
+		...item,
+		orderBy: [sortOrderBy],
+	};
+};
+
 interface ListViewProps {
 	isFilterApplied: boolean;
 }
 
 function ListView({ isFilterApplied }: ListViewProps): JSX.Element {
 	const { stagedQuery, panelType } = useQueryBuilder();
+	const [sortOrderAndKey, setSortOrderAndKey] = useState<{
+		key?: string;
+		sortOrder?: SortOrderMap.ascend | SortOrderMap.descend | SortOrderMap.null;
+	}>();
 
 	const { selectedTime: globalSelectedTime, maxTime, minTime } = useSelector<
 		AppState,
@@ -52,9 +94,13 @@ function ListView({ isFilterApplied }: ListViewProps): JSX.Element {
 		LOCALSTORAGE.TRACES_LIST_COLUMNS,
 	);
 
+	const { currentQuery, redirectWithQueryBuilderData } = useQueryBuilder();
+
 	const { queryData: paginationQueryData } = useUrlQueryData<Pagination>(
 		QueryParams.pagination,
 	);
+
+	const orderByFromQuery = currentQuery.builder.queryData[0].orderBy;
 
 	const { data, isFetching, isLoading, isError } = useGetQueryRange(
 		{
@@ -99,8 +145,12 @@ function ListView({ isFilterApplied }: ListViewProps): JSX.Element {
 	]);
 
 	const columns = useMemo(() => {
-		const updatedColumns = getListColumns(options?.selectColumns || []);
+		const updatedColumns = getListColumns(
+			options?.selectColumns || [],
+			orderByFromQuery,
+		);
 		return getDraggedColumns(updatedColumns, draggedColumns);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [options?.selectColumns, draggedColumns]);
 
 	const transformedQueryTableData = useMemo(
@@ -134,6 +184,38 @@ function ListView({ isFilterApplied }: ListViewProps): JSX.Element {
 		!isFetching &&
 		!isError &&
 		transformedQueryTableData.length === 0;
+
+	const handleTableChange: TableProps<any>['onChange'] = (
+		_pagination,
+		_filters,
+		sorter,
+	) => {
+		const { field, order } = sorter as SorterResult<any>;
+
+		setSortOrderAndKey({
+			key: String(field),
+			sortOrder: order ? SortOrderMap[order] : undefined,
+		});
+	};
+
+	useEffect(() => {
+		const sortOrderBy = {
+			columnName:
+				sortOrderAndKey?.key === 'date' ? 'timestamp' : sortOrderAndKey?.key,
+			order: sortOrderAndKey?.sortOrder,
+		};
+		const data: Query = {
+			...currentQuery,
+			builder: {
+				...currentQuery.builder,
+				queryData: currentQuery.builder.queryData?.map((item) =>
+					updateOrderBy(item, sortOrderBy),
+				),
+			},
+		};
+		redirectWithQueryBuilderData(data);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [sortOrderAndKey]);
 
 	return (
 		<Container>
@@ -171,6 +253,7 @@ function ListView({ isFilterApplied }: ListViewProps): JSX.Element {
 					columns={columns}
 					onRow={handleRow}
 					onDragColumn={handleDragColumn}
+					onChange={handleTableChange}
 				/>
 			)}
 		</Container>
