@@ -112,7 +112,8 @@ type APIHandler struct {
 
 	UseLogsNewSchema bool
 
-	hostsRepo *inframetrics.HostsRepo
+	hostsRepo     *inframetrics.HostsRepo
+	processesRepo *inframetrics.ProcessesRepo
 }
 
 type APIHandlerOpts struct {
@@ -183,6 +184,7 @@ func NewAPIHandler(opts APIHandlerOpts) (*APIHandler, error) {
 	querierv2 := querierV2.NewQuerier(querierOptsV2)
 
 	hostsRepo := inframetrics.NewHostsRepo(opts.Reader, querierv2)
+	processesRepo := inframetrics.NewProcessesRepo(opts.Reader, querierv2)
 
 	aH := &APIHandler{
 		reader:                        opts.Reader,
@@ -202,6 +204,7 @@ func NewAPIHandler(opts APIHandlerOpts) (*APIHandler, error) {
 		querierV2:                     querierv2,
 		UseLogsNewSchema:              opts.UseLogsNewSchema,
 		hostsRepo:                     hostsRepo,
+		processesRepo:                 processesRepo,
 	}
 
 	logsQueryBuilder := logsv3.PrepareLogsQuery
@@ -355,6 +358,11 @@ func (aH *APIHandler) RegisterInfraMetricsRoutes(router *mux.Router, am *AuthMid
 	subRouter.HandleFunc("/attribute_keys", am.ViewAccess(aH.getHostAttributeKeys)).Methods(http.MethodPost)
 	subRouter.HandleFunc("/attribute_values", am.ViewAccess(aH.getHostAttributeValues)).Methods(http.MethodPost)
 	subRouter.HandleFunc("/list", am.ViewAccess(aH.getHostList)).Methods(http.MethodPost)
+
+	subRouter = router.PathPrefix("/api/v1/processes").Subrouter()
+	subRouter.HandleFunc("/attribute_keys", am.ViewAccess(aH.getProcessAttributeKeys)).Methods(http.MethodPost)
+	subRouter.HandleFunc("/attribute_values", am.ViewAccess(aH.getProcessAttributeValues)).Methods(http.MethodPost)
+	subRouter.HandleFunc("/list", am.ViewAccess(aH.getProcesses)).Methods(http.MethodPost)
 }
 
 func (aH *APIHandler) RegisterWebSocketPaths(router *mux.Router, am *AuthMiddleware) {
